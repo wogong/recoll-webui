@@ -2,6 +2,19 @@
 Recoll WebUI
 ============
 
+This (https://framagit.org/medoc92/recollwebui) is an updated clone of
+Koniu's original version on GitHub (https://github.com/koniu/recoll-webui),
+which has not been updated lately, and is now slightly obsolete.
+
+As compared to the original, this version has an additional dependancy when
+running the webui-standalone.py server (i.e. not with apache): it uses the
+python3-waitress module which must be installed. This makes
+webui-standalone quite suitable for moderate multiaccess loads with no
+authentication needs.
+
+An updated version of the original doc follows.
+
+
 **Recoll WebUI** is a Python-based web interface for **Recoll** text search
 tool for Unix/Linux.
 
@@ -15,18 +28,14 @@ Requirements
 
 All you need to use the WebUI is:
 
-* Python 2.x
-* Recoll 1.17+
-* web browser
+* Python 3. On Windows you currently need Python 3.7 because this is what
+  the module is built with.
+* The Python waitress package. You can remove this dependance and run with
+  the internal bottle server by editing webui-standalone.py
+* Recoll 1.20+ and the Recoll Python3 extension (e.g. the python3-recoll package on Debian-derived
+  systems).
+* A WEB browser
 
-Download
-========
-If your Recoll version is 1.18.2 or newer:
-        https://github.com/koniu/recoll-webui/archive/master.zip
-If your Recoll version version is 1.17-1.18.1:
-        https://github.com/koniu/recoll-webui/archive/v1.18.1.zip
-You can fetch the full git repository like this:
-        ``git clone https://github.com/koniu/recoll-webui.git``
 
 Usage
 =====
@@ -46,8 +55,15 @@ There's some optional command-line arguments available::
     -a ADDR, --addr ADDR  address to bind to [127.0.0.1]
     -p PORT, --port PORT  port to listen on [8080]
 
+The standalone application can be configured to run automatically using
+systemd. See the file README.systemd.
+
 Run as WSGI/CGI
 ---------------
+
+See the following link for a complete run-through:
+
+https://www.lesbonscomptes.com/recoll/pages/recoll-webui-install-wsgi.html
 
 Example WSGI/Apache2 config::
 
@@ -61,7 +77,8 @@ Example WSGI/Apache2 config::
 
 Remarks:
 * Without "python-path=" you might see errors that it can't import webui 
-* Run the WSGIDeamonProcess run under the username (user=xyz) of the user that you want to have exposed via web
+* Run the WSGIDaemonProcess run under the username (user=xyz) of the user
+  that you want to have exposed via web.
 
 
 Example Upstart-Script for Ubuntu to run the indexer as daemon::

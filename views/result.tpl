@@ -7,7 +7,7 @@
         %url = url.replace(dr, prefix)
     %end
     <div class="search-result-title" id="r{{d['sha']}}" title="{{d['abstract']}}">
-    %if config.has_key('title_link') and config['title_link'] != 'download':
+    %if 'title_link' in config and config['title_link'] != 'download':
         %if config['title_link'] == 'open':
             <a href="{{url}}">{{d['label']}}</a>
         %elif config['title_link'] == 'preview':
@@ -20,7 +20,7 @@
     %if len(d['ipath']) > 0:
         <div class="search-result-ipath">[{{d['ipath']}}]</div>
     %end
-    %if d.has_key('author') and len(d['author']) > 0:
+    %if 'author' in d and len(d['author']) > 0:
         <div class="search-result-author">{{d['author']}}</div>
     %end
     <div class="search-result-url">
@@ -33,9 +33,7 @@
     <div class="search-result-links">
         <a href="{{url}}">Open</a>
         <a href="download/{{number-1}}?{{query_string}}">Download</a>
-    %if hasrclextract:
         <a href="preview/{{number-1}}?{{query_string}}" target="_blank">Preview</a>
-    %end
     </div>
     <div class="search-result-date">{{d['time']}}</div>
     <div class="search-result-snippet">{{!d['snippet']}}</div>
