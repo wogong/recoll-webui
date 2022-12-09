@@ -16,7 +16,7 @@ License: MIT (see LICENSE for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.12.21'
+__version__ = '0.12.23'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -92,7 +92,12 @@ if py3k:
     import pickle
     from io import BytesIO
     from configparser import ConfigParser
-    from inspect import getfullargspec as getargspec
+    from inspect import getfullargspec
+    def getargspec(func):
+        spec = getfullargspec(func)
+        kwargs = makelist(spec[0]) + makelist(spec.kwonlyargs)
+        return kwargs, spec[1], spec[2], spec[3]
+
     basestring = str
     unicode = str
     json_loads = lambda s: json_lds(touni(s))
@@ -2871,7 +2876,7 @@ class MeinheldServer(ServerAdapter):
 
 
 class FapwsServer(ServerAdapter):
-    """ Extremely fast webserver using libev. See http://www.fapws.org/ """
+    """ Extremely fast webserver using libev. See https://github.com/william-os4y/fapws3 """
     def run(self, handler): # pragma: no cover
         import fapws._evwsgi as evwsgi
         from fapws import base, config
