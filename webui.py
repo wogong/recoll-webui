@@ -355,7 +355,10 @@ def recoll_search(q):
         d['sha'] = hashlib.sha1((d['url']+d['ipath']).encode('utf-8')).hexdigest()
         d['time'] = timestr(d['mtime'], config['timefmt'])
         if 'snippets' in q and q['snippets']:
-            d['snippet'] = query.makedocabstract(doc, methods=highlighter)
+            if highlighter:
+                d['snippet'] = query.makedocabstract(doc, methods=highlighter)
+            else:
+                d['snippet'] = query.makedocabstract(doc)
             if not d['snippet']:
                 try:
                     d['snippet'] = doc['abstract']
