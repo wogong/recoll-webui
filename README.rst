@@ -7,7 +7,7 @@ Koniu's original version on GitHub (https://github.com/koniu/recoll-webui),
 which has not been updated lately, and is now slightly obsolete. If you are currently
 on github, you are viewing a mirror of the framagit repo (you're fine :) ).
 
-As compared to the original, this version has an additional dependancy when
+As compared to the original, this version has an additional dependency when
 running the webui-standalone.py server (i.e. not with apache): it uses the
 python3-waitress module which must be installed. This makes
 webui-standalone quite suitable for moderate multiaccess loads with no
@@ -31,7 +31,7 @@ Requirements
 All you need to use the WebUI is:
 
 * Python 3.
-* The Python waitress package. You can remove this dependance and run with
+* The Python waitress package. You can remove this dependence and run with
   the internal bottle server by editing webui-standalone.py
 * Recoll 1.20+ and the Recoll Python3 extension (e.g. the python3-recoll package on Debian-derived
   systems).

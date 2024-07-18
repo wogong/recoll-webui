@@ -118,7 +118,7 @@ class ConfSimple(object):
             return None
         return self.submaps[sk][nm]
 
-    def get(self, nm, sk = b''):
+    def get(self, nm, sk = b'', dflt=None):
         dodecode = False
         if type(nm) == type(u''):
             dodecode = True
@@ -129,6 +129,8 @@ class ConfSimple(object):
         v = self.getbin(nm, sk)
         if v is not None and dodecode:
             v = v.decode('utf-8')
+        if v is None:
+            return dflt
         return v
 
     def getNamesbin(self, sk = b''):
@@ -293,6 +295,7 @@ def stringToStrings(s, quotes = '"', escape = '\\', escapedquotes = '"',
         lex.escapedquotes = escapedquotes
     if whitespace is not None:
         lex.whitespace = whitespace
+    lex.commenters = ""
     l = []
     while True:
         tok = lex.get_token()
@@ -329,7 +332,10 @@ def valToBool(s):
 # Copyright 2019 Kenneth Reitz
 # Apache License - Version 2.0, January 2004 - http://www.apache.org/licenses
 
-from collections.abc import MutableMapping
+try:
+    from collections.abc import MutableMapping
+except:
+    from collections import MutableMapping
 
 class CaseInsensitiveDict(MutableMapping):
     """

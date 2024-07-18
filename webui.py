@@ -87,6 +87,8 @@ def select(ls, invalid=[None]):
             return value
 
 def timestr(secs, fmt):
+    # Just in case: we had a bug at some point inserting commas in the dmtime field.
+    secs.strip(',')
     if secs == '' or secs is None:
         secs = '0'
     t = time.gmtime(int(secs))
