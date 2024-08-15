@@ -94,6 +94,8 @@ def timestr(secs, fmt):
     t = time.gmtime(int(secs))
     return time.strftime(fmt, t)
 
+# Compute a file name used for an attachment 'filename' attribute. We don't know what the remote
+# system would accept, so play it safe
 def normalise_filename(fn):
     valid_chars = "_-%s%s" % (string.ascii_letters, string.digits)
     out = ""
@@ -104,6 +106,7 @@ def normalise_filename(fn):
             out += "_"
     return out
 
+# We may need to get the "topdirs" value from other directories than our main one.
 def get_topdirs(confdir):
     rclconf = rclconfig.RclConfig(confdir)
     return rclconf.getConfParam('topdirs')
@@ -115,21 +118,25 @@ def safe_envget(varnm):
     except Exception as ex:
         return None
 
-# get database directory from recoll.conf, defaults to confdir/xapiandb. Note
-# that this is available as getDbDir() in newer rclconfig versions
+# Get the database directory from recoll.conf, defaults to confdir/xapiandb. Note
+# that this is available as getDbDir() from recoll 1.27 (2020)
 def get_dbdir(confdir):
     confdir = os.path.expanduser(confdir)
     rclconf = rclconfig.RclConfig(confdir)
-    dbdir = rclconf.getConfParam('dbdir')
-    if not dbdir:
-        dbdir = 'xapiandb'
-    if not os.path.isabs(dbdir):
-        cachedir = rclconf.getConfParam('cachedir')
-        if not cachedir:
-            cachedir = confdir
-        dbdir = os.path.join(cachedir, dbdir)
+    try:
+        dbdir = rclconf.getDbDir()
+    except:
+        dbdir = rclconf.getConfParam('dbdir')
+        if not dbdir:
+            dbdir = 'xapiandb'
+        if not os.path.isabs(dbdir):
+            cachedir = rclconf.getConfParam('cachedir')
+            if not cachedir:
+                cachedir = confdir
+            dbdir = os.path.join(cachedir, dbdir)
     # recoll API expects bytes, not strings
     return os.path.normpath(dbdir).encode(g_fscharset)
+
 #}}}
 #{{{ get_config
 def get_config():
