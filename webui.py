@@ -190,7 +190,10 @@ def get_config():
     config['mounts'] = {}
     for d in config['dirs']:
         name = 'mount_%s' % urlquote(d,'')
-        config['mounts'][d] = select([bottle.request.get_cookie(name), 'file://%s' % d], [None, ''])
+        config['mounts'][d] = select([bottle.request.get_cookie(name),
+                                      rclconf.getConfParam('webui_mount_%s' % d),
+                                      'file://%s' % d],
+                                     [None, ''])
 
     # Parameters set by the admin in the recoll configuration
     # file. These override anything else, so read them last
