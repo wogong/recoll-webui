@@ -16,7 +16,7 @@ License: MIT (see LICENSE for details)
 from __future__ import with_statement
 
 __author__ = 'Marcel Hellkamp'
-__version__ = '0.12.23'
+__version__ = '0.12.25'
 __license__ = 'MIT'
 
 # The gevent server adapter needs to patch some modules before they are imported
@@ -308,7 +308,7 @@ class Router(object):
     rule_syntax = re.compile('(\\\\*)'\
         '(?:(?::([a-zA-Z_][a-zA-Z_0-9]*)?()(?:#(.*?)#)?)'\
           '|(?:<([a-zA-Z_][a-zA-Z_0-9]*)?(?::([a-zA-Z_]*)'\
-            '(?::((?:\\\\.|[^\\\\>]+)+)?)?)?>))')
+            '(?::((?:\\\\.|[^\\\\>])+)?)?)?>))')
 
     def _itertokens(self, rule):
         offset, prefix = 0, ''
@@ -565,7 +565,7 @@ class Route(object):
     def get_config(self, key, default=None):
         ''' Lookup a config field and return its value, first checking the
             route.config, then route.app.config.'''
-        for conf in (self.config, self.app.conifg):
+        for conf in (self.config, self.app.config):
             if key in conf: return conf[key]
         return default
 
@@ -908,13 +908,13 @@ class Bottle(object):
             out = out[0][0:0].join(out) # b'abc'[0:0] -> b''
         # Encode unicode strings
         if isinstance(out, unicode):
-            # Jf change: in case python3 encounters un-decodable file
-            # names, it will use surrogateescape to convert them to
-            # str. So, use the error handler by default. Apart from
-            # non-decodable paths, there should be no encoding errors
-            # at this point, so this should have no general
-            # consequences.
-            out = out.encode(response.charset, 'surrogateescape')
+           # Jf change: in case python3 encounters un-decodable file
+           # names, it will use surrogateescape to convert them to
+           # str. So, use the error handler by default. Apart from
+           # non-decodable paths, there should be no encoding errors
+           # at this point, so this should have no general
+           # consequences.
+           out = out.encode(response.charset, 'surrogateescape')
         # Byte Strings are just returned
         if isinstance(out, bytes):
             if 'Content-Length' not in response:
@@ -1101,6 +1101,7 @@ class BaseRequest(object):
             :class:`FormsDict`. All keys and values are strings. File uploads
             are stored separately in :attr:`files`. """
         forms = FormsDict()
+        forms.recode_unicode = self.POST.recode_unicode
         for name, item in self.POST.allitems():
             if not isinstance(item, FileUpload):
                 forms[name] = item
@@ -1124,6 +1125,7 @@ class BaseRequest(object):
 
         """
         files = FormsDict()
+        files.recode_unicode = self.POST.recode_unicode
         for name, item in self.POST.allitems():
             if isinstance(item, FileUpload):
                 files[name] = item
@@ -1249,6 +1251,7 @@ class BaseRequest(object):
                                          newline='\n')
         elif py3k:
             args['encoding'] = 'utf8'
+            post.recode_unicode = False
         data = cgi.FieldStorage(**args)
         self['_cgi.FieldStorage'] = data #http://bugs.python.org/issue18394#msg207958
         data = data.list or []
@@ -1760,7 +1763,7 @@ class JSONPlugin(object):
         def wrapper(*a, **ka):
             try:
                 rv = callback(*a, **ka)
-            except HTTPError:
+            except HTTPResponse:
                 rv = _e()
 
             if isinstance(rv, dict):
@@ -3492,7 +3495,7 @@ class StplParser(object):
     # Match the start tokens of code areas in a template
     _re_split = '(?m)^[ \t]*(\\\\?)((%(line_start)s)|(%(block_start)s))(%%?)'
     # Match inline statements (may contain python strings)
-    _re_inl = '(?m)%%(inline_start)s((?:%s|[^\'"\n]*?)+)%%(inline_end)s' % _re_inl
+    _re_inl = '(?m)%%(inline_start)s((?:%s|[^\'"\n])*?)%%(inline_end)s' % _re_inl
     _re_tok = '(?m)' + _re_tok
 
     default_syntax = '<% %> % {{ }}'
