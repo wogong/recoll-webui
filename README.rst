@@ -130,7 +130,8 @@ The following are not changeable from the user interface:
   through the UI.
 - webui_nosettings (0) do not show settings options to users.
 - webui_defaultsort ("Relevancy") default sort field.
-
+- webui_synonyms ("") absolute path to a Recoll synonyms file. Note that the optional Recoll
+  `idxsynonyms` value should be the same string if it is to be used.
 
 Running the indexer
 -------------------

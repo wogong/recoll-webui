@@ -40,6 +40,7 @@ DEFAULTS = {
     'csvfields': 'filename title author size time mtype url',
     'title_link': 'download',
     'collapsedups': 0,
+    'synonyms': "",
 }
 
 # sort fields/labels
@@ -88,7 +89,7 @@ def select(ls, invalid=[None]):
 
 def timestr(secs, fmt):
     # Just in case: we had a bug at some point inserting commas in the dmtime field.
-    secs=secs.strip(',')
+    secs = secs.strip(',')
     if secs == '' or secs is None:
         secs = '0'
     t = time.gmtime(int(secs))
@@ -96,14 +97,9 @@ def timestr(secs, fmt):
 
 # Compute a file name used for an attachment 'filename' attribute. We don't know what the remote
 # system would accept, so play it safe
+_g_valid_filename_chars = "_-%s%s" % (string.ascii_letters, string.digits)
 def normalise_filename(fn):
-    valid_chars = "_-%s%s" % (string.ascii_letters, string.digits)
-    out = ""
-    for i in range(0,len(fn)):
-        if fn[i] in valid_chars:
-            out += fn[i]
-        else:
-            out += "_"
+    out = ''.join(c if c in _g_valid_filename_chars else "_" for c in fn)
     return out
 
 # We may need to get the "topdirs" value from other directories than our main one.
@@ -171,7 +167,7 @@ def get_config():
     # that they can't even be adjusted from the UI). The 2nd parameter asks for an int conversion
     fetches = [("context", 1), ("stem", 1),("timefmt", 0),("dirdepth", 1),("maxchars", 1),
                ("maxresults", 1), ("perpage", 1), ("csvfields", 0), ("title_link", 0),
-               ("collapsedups", 0)]
+               ("collapsedups", 0), ("synonyms", 0)]
     for k, isint in fetches:
         value = rclconf.getConfParam("webui_" + k)
         if value is not None:
@@ -296,10 +292,15 @@ def recoll_initsearch(q):
     if config['extradbs']:
         dbs.extend(config['extradbs'])
 
-    if dbs:
-        db = recoll.connect(confdir,dbs)
-    else:
-        db = recoll.connect(confdir)
+    db = recoll.connect(confdir, extra_dbs=dbs)
+
+    if config["synonyms"]:
+        try:
+            db.setSynonymsFile(config["synonyms"])
+        except:
+            # Only supported from recoll 1.40.3, just ignore the error for now
+            msg(f"Setting synonyms to [{config['synonyms']}] failed")
+            pass
 
     db.setAbstractParams(config['maxchars'], config['context'])
     query = db.query()
