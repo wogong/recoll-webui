@@ -121,8 +121,13 @@ The initial defaults can be changed by setting values in the main recoll configu
 - webui_csvfields ("filename title author size time mtype url") fields extracted in CSV or JSON dumps.
 - webui_title_link ("download") action performed if you click the result title (or 'open',
   'preview').
-- webui_mount_MOUNTNAME (file://MOUNTNAME) location replacement for mount points
+- webui_mount_MOUNTNAME (``file://MOUNTNAME``) location replacement for mount points. e.g.::
 
+    webui_mount_/server/path = file:///local/client/path
+
+  This is only really usable if ``webui_nosettings`` is also set, because, otherwise, the cookie
+  value will override the server setting.
+  
 The following are not changeable from the user interface:
 
 - webui_nojsoncsv (0) If set, disable downloading results as JSON or CSV.
