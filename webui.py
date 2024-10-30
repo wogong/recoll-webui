@@ -167,7 +167,7 @@ def get_config():
     # that they can't even be adjusted from the UI). The 2nd parameter asks for an int conversion
     fetches = [("context", 1), ("stem", 1),("timefmt", 0),("dirdepth", 1),("maxchars", 1),
                ("maxresults", 1), ("perpage", 1), ("csvfields", 0), ("title_link", 0),
-               ("collapsedups", 0), ("synonyms", 0)]
+               ("collapsedups", 1), ("synonyms", 0)]
     for k, isint in fetches:
         value = rclconf.getConfParam("webui_" + k)
         if value is not None:
@@ -176,8 +176,7 @@ def get_config():
     for k, v in DEFAULTS.items():
         value = select([bottle.request.get_cookie(k), v])
         config[k] = type(v)(value)
-    # Fix csvfields: get rid of invalid ones to avoid needing tests in
-    # the dump function
+    # Fix csvfields: get rid of invalid ones to avoid needing tests in the dump function
     cf = config['csvfields'].split()
     ncf = [f for f in cf if f in FIELDS]
     config['csvfields'] = ' '.join(ncf)
@@ -187,8 +186,8 @@ def get_config():
     for d in config['dirs']:
         name = 'mount_%s' % urlquote(d,'')
         config['mounts'][d] = select([bottle.request.get_cookie(name),
-                                      rclconf.getConfParam('webui_mount_%s' % d),
-                                      'file://%s' % d],
+                                      rclconf.getConfParam(f"webui_mount_{d}"),
+                                      f"file://{d}"],
                                      [None, ''])
 
     # Parameters set by the admin in the recoll configuration
@@ -294,7 +293,8 @@ def recoll_initsearch(q):
 
     db = recoll.connect(confdir, extra_dbs=dbs)
 
-    if config["synonyms"]:
+    # Compare to "None" because of the conv. to str done while setting from cookies
+    if config["synonyms"] and config["synonyms"] != "None":
         try:
             db.setSynonymsFile(config["synonyms"])
         except:
@@ -307,7 +307,8 @@ def recoll_initsearch(q):
     query.sortby(q['sort'], q['ascending'])
     try:
         qs = query_to_recoll_string(q)
-        query.execute(qs, config['stem'], config['stemlang'], collapseduplicates=config['collapsedups'])
+        query.execute(qs, config['stem'], config['stemlang'],
+                      collapseduplicates=config['collapsedups'])
     except Exception as ex:
         msg("Query execute failed: %s" % ex)
         pass
@@ -532,10 +533,16 @@ def settings():
 def set():
     config = get_config()
     for k, v in DEFAULTS.items():
-        bottle.response.set_cookie(k, str(bottle.request.query.get(k)), max_age=3153600000, expires=315360000)
+        bottle.response.set_cookie(k, str(bottle.request.query.get(k)),
+                                   max_age=3153600000, expires=315360000)
     for d in config['dirs']:
+        # We should not set the cookie if the value is the default (identical path). This would
+        # allow the server configuration setting to be used if set. This would also show a wrong
+        # value in the settings screen (default instead of server config value), so not too sure
+        # what the right thing would be here.
         cookie_name = 'mount_%s' % urlquote(d, '')
-        bottle.response.set_cookie(cookie_name, str(bottle.request.query.get('mount_%s' % d)), max_age=3153600000, expires=315360000)
+        bottle.response.set_cookie(cookie_name, str(bottle.request.query.get('mount_%s' % d)),
+                                   max_age=3153600000, expires=315360000)
     bottle.redirect('./')
 #}}}
 #{{{ osd
