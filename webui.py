@@ -23,8 +23,6 @@ except ImportError:
     import json
     #msg("ujson module not found, using (slower) built-in json module instead")
 
-msg("imports done")
-
 g_fscharset=sys.getfilesystemencoding()
 
 #}}}
