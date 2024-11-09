@@ -23,6 +23,7 @@ except ImportError:
     import json
     #msg("ujson module not found, using (slower) built-in json module instead")
 
+msg("imports done")
 
 g_fscharset=sys.getfilesystemencoding()
 
@@ -167,7 +168,7 @@ def get_config():
     # that they can't even be adjusted from the UI). The 2nd parameter asks for an int conversion
     fetches = [("context", 1), ("stem", 1),("timefmt", 0),("dirdepth", 1),("maxchars", 1),
                ("maxresults", 1), ("perpage", 1), ("csvfields", 0), ("title_link", 0),
-               ("collapsedups", 1), ("synonyms", 0)]
+               ("collapsedups", 1), ("synonyms", 0), ("noresultlinks", 1)]
     for k, isint in fetches:
         value = rclconf.getConfParam("webui_" + k)
         if value is not None:
