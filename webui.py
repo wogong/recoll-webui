@@ -40,6 +40,15 @@ DEFAULTS = {
     'title_link': 'download',
     'collapsedups': 0,
     'synonyms': "",
+    'mounts': {
+        # Override default links for directories.
+        # Useful for rewriting links to access the files on a server.
+        # If not specified, the url will be dir path prefixed with 'file://'.
+        #
+        # Path in recoll.conf   : Remote url
+        # '/media/data/docs'    : 'https://media.server.com/docs',
+        # '/var/www/data'       : 'file:///192.168.1.2/data',
+    },
 }
 
 # sort fields/labels
