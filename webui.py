@@ -49,6 +49,8 @@ DEFAULTS = {
         # '/media/data/docs'    : 'https://media.server.com/docs',
         # '/var/www/data'       : 'file:///192.168.1.2/data',
     },
+    "noresultlinks":  0,
+    "logquery": 0
 }
 
 # sort fields/labels
@@ -175,7 +177,7 @@ def get_config():
     # that they can't even be adjusted from the UI). The 2nd parameter asks for an int conversion
     fetches = [("context", 1), ("stem", 1),("timefmt", 0),("dirdepth", 1),("maxchars", 1),
                ("maxresults", 1), ("perpage", 1), ("csvfields", 0), ("title_link", 0),
-               ("collapsedups", 1), ("synonyms", 0), ("noresultlinks", 1)]
+               ("collapsedups", 1), ("synonyms", 0), ("noresultlinks", 1), ("logquery", 1)]
     for k, isint in fetches:
         value = rclconf.getConfParam("webui_" + k)
         if value is not None:
@@ -315,6 +317,8 @@ def recoll_initsearch(q):
     query.sortby(q['sort'], q['ascending'])
     try:
         qs = query_to_recoll_string(q)
+        if "logquery" in config and config["logquery"]:
+            msg(f"Query: {qs}")
         query.execute(qs, config['stem'], config['stemlang'],
                       collapseduplicates=config['collapsedups'])
     except Exception as ex:
