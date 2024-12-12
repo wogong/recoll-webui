@@ -184,7 +184,7 @@ def get_config():
             DEFAULTS[k] = int(value) if isint else value
     # get config from cookies or defaults
     for k, v in DEFAULTS.items():
-        value = select([bottle.request.get_cookie(k), v])
+        value = select([bottle.request.get_cookie(k), v], invalid=["None", None])
         config[k] = type(v)(value)
     # Fix csvfields: get rid of invalid ones to avoid needing tests in the dump function
     cf = config['csvfields'].split()
