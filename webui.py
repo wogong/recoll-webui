@@ -377,7 +377,7 @@ def recoll_search(q):
                 d[f] = v
             else:
                 d[f] = ''
-        d['label'] = select([d['title'], d['filename'], '?'], [None, ''])
+        d['label'] = select([d['title'], os.path.basename(d['url']), '?'], [None, ''])
         d['sha'] = hashlib.sha1((d['url']+d['ipath']).encode('utf-8')).hexdigest()
         d['time'] = timestr(d['mtime'], config['timefmt'])
         if 'snippets' in q and q['snippets']:
