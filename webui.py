@@ -102,7 +102,7 @@ def timestr(secs, fmt):
     secs = secs.strip(',')
     if secs == '' or secs is None:
         secs = '0'
-    t = time.gmtime(int(secs))
+    t = time.localtime(int(secs))
     return time.strftime(fmt, t)
 
 # Compute a file name used for an attachment 'filename' attribute. We don't know what the remote
