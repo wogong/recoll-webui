@@ -144,6 +144,24 @@ def get_dbdir(confdir):
     return os.path.normpath(dbdir).encode(g_fscharset)
 
 #}}}
+def commonpathprefix(paths):
+    if len(paths) == 0:
+        return ""
+    common = [p for p in paths[0].split("/") if len(p)]
+    for path in paths[1:]:
+        # Keep only the paths elements at the start which are common with the currently
+        # calculated common part
+        np = [p for p in path.split("/") if len(p)]
+        nc = []
+        for i in range(len(np)):
+            if i >= len(common) or np[i] != common[i]:
+                break
+            nc.append(np[i])
+        if len(nc) == 0:
+            return ""
+        common = nc
+    return "/" + "/".join(common) + "/"
+
 #{{{ get_config
 def get_config():
     # Arrange for apache wsgi SetEnv values to be reflected in the os environment.
@@ -156,9 +174,9 @@ def get_config():
     # get useful things from recoll.conf
     rclconf = rclconfig.RclConfig(envdir)
     config['confdir'] = rclconf.getConfDir()
-    config['dirs'] = dict.fromkeys([os.path.expanduser(d) for d in
-                                    shlex.split(rclconf.getConfParam('topdirs'))],
-                                   config['confdir'])
+    topdirs = [os.path.expanduser(d) for d in shlex.split(rclconf.getConfParam('topdirs'))]
+    config['dirs'] = dict.fromkeys(topdirs, config['confdir'])
+    config['commonprefix'] = commonpathprefix(topdirs)
     # add topdirs from extra config dirs
     extraconfdirs = safe_envget('RECOLL_EXTRACONFDIRS')
     if extraconfdirs:
@@ -177,7 +195,9 @@ def get_config():
     # that they can't even be adjusted from the UI). The 2nd parameter asks for an int conversion
     fetches = [("context", 1), ("stem", 1),("timefmt", 0),("dirdepth", 1),("maxchars", 1),
                ("maxresults", 1), ("perpage", 1), ("csvfields", 0), ("title_link", 0),
-               ("collapsedups", 1), ("synonyms", 0), ("noresultlinks", 1), ("logquery", 1)]
+               ("collapsedups", 1), ("synonyms", 0), ("noresultlinks", 1), ("logquery", 1),
+               ("shortenpaths", 1),
+               ]
     for k, isint in fetches:
         value = rclconf.getConfParam("webui_" + k)
         if value is not None:
