@@ -50,7 +50,8 @@ DEFAULTS = {
         # '/var/www/data'       : 'file:///192.168.1.2/data',
     },
     "noresultlinks":  0,
-    "logquery": 0
+    "logquery": 0,
+    "shortenpaths": 1,
 }
 
 # sort fields/labels

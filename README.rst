@@ -137,7 +137,9 @@ The following are not changeable from the user interface:
 - webui_defaultsort ("Relevancy") default sort field.
 - webui_synonyms ("") absolute path to a Recoll synonyms file. Note that the optional Recoll
   `idxsynonyms` value should be the same string if it is to be used.
-
+- webui_shortenpaths (1) shorten the folder paths shown in the result list by removing the common
+  prefix. The default is to do it, set to 0 to show complete paths.
+  
 Running the indexer
 -------------------
 

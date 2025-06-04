@@ -28,7 +28,7 @@
     %end
     <div class="search-result-url">
         %urllabel = d['url'].replace('file://', '')
-        %if 'shortenpaths' in config and config['shortenpaths']:
+        %if config['shortenpaths']:
             %if len(config['commonprefix']) > 0 and len(urllabel) > len(config['commonprefix']):
                 %urllabel = urllabel.replace(config['commonprefix'], "")
             %end
