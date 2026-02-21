@@ -1,5 +1,6 @@
 body {	margin: 0; font-family: sans-serif }
 * { font-family: inherit  }
+#form { width: 100%; border-collapse: collapse; table-layout: fixed; }
 #searchbox {
 	background: #eee;
 	border-bottom: 1px solid #666;
@@ -134,3 +135,69 @@ hr { border: 1px solid #999 }
 	display: none;
 }
 
+@media (max-width: 900px) {
+	#searchbox { padding: 0.5em 0; }
+	#form, #form tbody, #form tr, #form td {
+		display: block;
+		width: 100%;
+	}
+	#form td {
+		padding: 0.75em;
+		border-right: 0;
+		box-sizing: border-box;
+	}
+	#results { padding: 0.5em; }
+	.search-result {
+		margin-left: 0;
+		margin-right: 0;
+		padding: 0.75em 0 1em;
+	}
+	.search-result-number {
+		float: none;
+		margin-left: 0;
+		margin-bottom: 0.5em;
+		width: auto;
+		text-align: left;
+	}
+	.search-result-title,
+	.search-result-ipath,
+	.search-result-url a,
+	.search-result-links,
+	.search-result-date {
+		float: none;
+		display: block;
+	}
+	.search-result-title,
+	.search-result-ipath {
+		font-size: 11pt;
+	}
+	.search-result-ipath { padding-left: 0; }
+	.search-result-links {
+		visibility: visible;
+		margin: 0.4em 0;
+	}
+	.search-result-url a,
+	.search-result-links,
+	.search-result-date {
+		margin-right: 0;
+	}
+	.search-result-snippet {
+		text-align: left;
+		padding-left: 0.75em;
+	}
+	#found, #downloads {
+		float: none;
+		display: block;
+	}
+	#downloads {
+		border-left: 0;
+		border-top: 1px solid #eaeaea;
+	}
+	#settings-box {
+		position: static;
+		left: auto;
+		right: auto;
+		margin: 1em;
+	}
+	input[type=button], input[type=reset], input[type=submit] { width: 100%; }
+}
