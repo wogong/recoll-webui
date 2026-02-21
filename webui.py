@@ -52,6 +52,8 @@ DEFAULTS = {
     "noresultlinks":  0,
     "logquery": 0,
     "shortenpaths": 1,
+    "permlinks": 0,
+    "res_permlink": 0,
 }
 
 # sort fields/labels
@@ -197,7 +199,7 @@ def get_config():
     fetches = [("context", 1), ("stem", 1),("timefmt", 0),("dirdepth", 1),("maxchars", 1),
                ("maxresults", 1), ("perpage", 1), ("csvfields", 0), ("title_link", 0),
                ("collapsedups", 1), ("synonyms", 0), ("noresultlinks", 1), ("logquery", 1),
-               ("shortenpaths", 1),
+               ("shortenpaths", 1), ("permlinks", 1), ("res_permlink", 1),
                ]
     for k, isint in fetches:
         value = rclconf.getConfParam("webui_" + k)
@@ -278,6 +280,8 @@ def get_query(config=None):
         'highlight': int(select([bottle.request.query.highlight, 1], [None, ''])),
         'snippets': int(select([bottle.request.query.snippets, 1], [None, ''])),
     }
+    if bottle.request.query.rcludi:
+        query['rcludi'] = bottle.request.query.rcludi
     #msg("query['query'] : %s" % query['query'])
     return query
 #}}}
@@ -345,7 +349,7 @@ def recoll_initsearch(q):
     except Exception as ex:
         msg("Query execute failed: %s" % ex)
         pass
-    return query
+    return query, db
 #}}}
 #{{{ HlMeths
 class HlMeths:
@@ -359,9 +363,14 @@ def recoll_search(q):
     config = get_config()
     tstart = datetime.datetime.now()
     results = []
-    query = recoll_initsearch(q)
+    query,_ = recoll_initsearch(q)
     nres = query.rowcount
-
+    if "rcludi" in q and q["rcludi"]:
+        rcludi = q["rcludi"]
+        nres = 1
+        q['page'] = 1
+    else:
+        rcludi = None
     if config['maxresults'] == 0:
         config['maxresults'] = nres
     if nres > config['maxresults']:
@@ -381,7 +390,9 @@ def recoll_search(q):
         highlighter = HlMeths()
     else:
         highlighter = None
-    for i in range(config['perpage']):
+
+    udibreak = False
+    while len(results) < config['perpage']:
         try:
             doc = query.fetchone()
             # Later Recoll versions return None at EOL instead of
@@ -389,6 +400,11 @@ def recoll_search(q):
             # Python Database API Specification
             if not doc:
                 break
+            if rcludi:
+                if doc['rcludi'] == rcludi:
+                    udibreak = True
+                else:
+                    continue
         except:
             break
         d = {}
@@ -401,6 +417,7 @@ def recoll_search(q):
         d['label'] = select([d['title'], os.path.basename(d['url']), '?'], [None, ''])
         d['sha'] = hashlib.sha1((d['url']+d['ipath']).encode('utf-8')).hexdigest()
         d['time'] = timestr(d['mtime'], config['timefmt'])
+        d['rcludi'] = doc['rcludi']
         if 'snippets' in q and q['snippets']:
             if highlighter:
                 d['snippet'] = query.makedocabstract(doc, methods=highlighter)
@@ -414,6 +431,8 @@ def recoll_search(q):
         #for n,v in d.items():
         #    print("type(%s) is %s" % (n,type(v)))
         results.append(d)
+        if udibreak:
+            break
     tend = datetime.datetime.now()
     return results, nres, tend - tstart
 #}}}
@@ -459,11 +478,22 @@ def preview(resnum):
     config = get_config()
     query = get_query(config)
     qs = query_to_recoll_string(query)
-    rclq = recoll_initsearch(query)
-    if resnum > rclq.rowcount - 1:
-        return 'Bad result index %d' % resnum
-    rclq.scroll(resnum)
-    doc = rclq.fetchone()
+    rclq,db = recoll_initsearch(query)
+    if "rcludi" in query and query["rcludi"]:
+        # Permlinks active
+        # Notes: if the initial path had non-utf8 chars, they would have \xnn encoded and we should
+        # decode them with codecs.escape_decode(query['rcludi']. Howvever, this is not foolproof
+        # because the original path could have contained litteral \xnn (4 ascii chars) sequences:
+        # implausible, but not impossible. So for now let well enough alone.
+        # Also: this currently does not work with additional indexes because we'd need to pass the
+        # idxi, but we can't access it from Python. This will be fixed in recoll versions from
+        # 1.43.13, and we will have to add the idxi to the urls along with rcludi
+        doc = db.getDoc(query['rcludi'])
+    else:
+        if resnum > rclq.rowcount - 1:
+            return 'Bad result index %d' % resnum
+        rclq.scroll(resnum)
+        doc = rclq.fetchone()
     xt = rclextract.Extractor(doc)
     tdoc = xt.textextract(doc.ipath)
     if tdoc.mimetype == 'text/html':
@@ -495,11 +525,15 @@ def edit(resnum):
     config = get_config()
     query = get_query(config)
     qs = query_to_recoll_string(query)
-    rclq = recoll_initsearch(query)
-    if resnum > rclq.rowcount - 1:
-        return 'Bad result index %d' % resnum
-    rclq.scroll(resnum)
-    doc = rclq.fetchone()
+    rclq,db = recoll_initsearch(query)
+    if "rcludi" in query and query["rcludi"]:
+        # See comment in preview
+        doc = db.getDoc(query['rcludi'])
+    else:
+        if resnum > rclq.rowcount - 1:
+            return 'Bad result index %d' % resnum
+        rclq.scroll(resnum)
+        doc = rclq.fetchone()
     bottle.response.content_type = doc.mimetype
     xt = rclextract.Extractor(doc)
     path = xt.idoctofile(doc.ipath, doc.mimetype)
