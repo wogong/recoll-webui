@@ -323,9 +323,6 @@ def recoll_initsearch(q):
             confdir = confdirs[0]
             dbs.extend(map(get_dbdir, confdirs[1:]))
 
-    if config['extradbs']:
-        dbs.extend(config['extradbs'])
-
     db = recoll.connect(confdir, extra_dbs=dbs)
 
     # Compare to "None" because of the conv. to str done while setting from cookies

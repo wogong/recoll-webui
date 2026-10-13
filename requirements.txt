@@ -1,0 +1,6 @@
+# Runtime dependency for webui-standalone.py
+waitress
+
+# Required by webui.py, but typically installed from the OS package manager
+# together with Recoll itself (for example: python3-recoll on Debian/Ubuntu).
+# recoll
